@@ -45,7 +45,7 @@ stages:
           scriptType: 'bash'
           scriptLocation: 'inlineScript'
           inlineScript: |
-            az deployment group what-if \
+            az deployment sub what-if \
               --location $(Location) \
               --parameters @parameters.prod.json \
               --template-file main.bicep 
