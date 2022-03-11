@@ -16,4 +16,4 @@ jobs:
       inlineScript: |
         az deployment sub create \
           --location centralus
-          --template-file deploy/main.bicep
+          --template-file main.bicep
