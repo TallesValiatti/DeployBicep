@@ -52,8 +52,8 @@ stages:
 
 - stage: Deploy
   jobs:
-  - deployment: DeployWebsite
-    displayName: Deploy website
+  - deployment: Deploy
+    displayName: Deploy
     environment: deploy-bicep-environment
     strategy:
       runOnce:
