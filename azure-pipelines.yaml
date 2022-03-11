@@ -71,6 +71,6 @@ stages:
                   set -e
                   az deployment sub create \
                     --location $(Location) \
-                    --name $(Build.BuildNumber)
+                    --name $(Build.BuildNumber) \
                     --parameters @parameters.prod.json \
                     --template-file main.bicep 
