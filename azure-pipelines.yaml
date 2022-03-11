@@ -1,21 +1,92 @@
-# https://docs.microsoft.com/en-us/learn/modules/build-first-bicep-deployment-pipeline-using-azure-pipelines/3-exercise-create-run-basic-pipeline
-
 trigger: none
 
 pool:
   vmImage: ubuntu-latest
 
+stages:
+- stage: Lint
+  jobs: 
+  - job: LintCode
+    displayName: Lint code
+    steps:
+      - script: |
+          az bicep build --file main.bicep
+        name: LintBicepCode
+        displayName: Run Bicep linter
+
+- stage: Validate
+  jobs:
+  - job: ValidateBicepCode
+    displayName: Validate Bicep code
+    steps:
+      - task: AzureCLI@2
+        name: RunPreflightValidation
+        displayName: Run preflight validation
+        inputs:
+          azureSubscription: $(ServiceConnectionName)
+          scriptType: 'bash'
+          scriptLocation: 'inlineScript'
+          inlineScript: |
+            az deployment sub validate \
+              --location $(Location) \
+              --parameters @parameters.prod.json \
+              --template-file main.bicep 
+
+- stage: Preview
+  jobs: 
+  - job: PreviewAzureChanges
+    displayName: Preview Azure changes
+    steps:
+      - task: AzureCLI@2
+        name: RunWhatIf
+        displayName: Run what-if
+        inputs:
+          azureSubscription: $(ServiceConnectionName)
+          scriptType: 'bash'
+          scriptLocation: 'inlineScript'
+          inlineScript: |
+            az deployment group what-if \
+              --location $(Location) \
+              --parameters @parameters.prod.json \
+              --template-file main.bicep 
+
+- stage: Deploy prod
+  jobs:
+  - deployment: DeployWebsite
+    displayName: Deploy website
+    environment: deploy-bicep-environment
+    strategy:
+      runOnce:
+        deploy:
+          steps:
+            - checkout: self
+            - task: AzureCLI@2
+              name: DeployBicepFile
+              displayName: Deploy Bicep file
+              inputs:
+                azureSubscription: $(ServiceConnectionName)
+                scriptType: 'bash'
+                scriptLocation: 'inlineScript'
+                inlineScript: |
+                  set -e
+                  az deployment sub create \
+                    --location $(Location) \
+                    --name $(Build.BuildNumber)
+                    --parameters @parameters.prod.json \
+                    --template-file main.bicep 
+              
 jobs:
 - job:
   steps:
   - task: AzureCLI@2
     inputs:
-      azureSubscription: 'my-service-connection'
+      azureSubscription: $(ServiceConnectionName)
       scriptType: 'bash'
       scriptLocation: 'inlineScript'
       inlineScript: |
         az deployment sub create \
-          --location centralus \
-          --parameters @parameters.json \
+          --location $(Location) \
+          --name $(Build.BuildNumber)
+          --parameters @parameters.prod.json \
           --template-file main.bicep 
           

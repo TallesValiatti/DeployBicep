@@ -1,19 +1,38 @@
-// az deployment sub create --template-file Infra/main.bicep --location centralus
-
-// Parameters
-param rgName string
-
 // Scope
 targetScope = 'subscription'
 
-// Shared variables
+// Shared Params
 param location string = deployment().location
+param resourceGroupName string
+param workflowEnvironment string
 
-// Resource group variables
-var rgFullName = 'rg-${rgName}-${location}'
+// Storage Account Params
+param storageAccountName string
+param storageAccountSku string
+param storageAccountKind string
+param containerNames array
 
-// Resource group
+// Resource Group Variables
+var resourceGroupFullName = 'rg-${resourceGroupName}-${workflowEnvironment}-${location}'
+
+// Storage Account Variables
+var storageAccountFullName = '${storageAccountName}${workflowEnvironment}' 
+
+// Resource Group
 resource rg 'Microsoft.Resources/resourceGroups@2020-10-01' = {
   location: location
-  name: rgFullName
+  name: resourceGroupFullName
+}
+
+// Storage Account Module
+module storageAccountModule 'Modules/storageAccountModule.bicep' = {
+  name: 'storageAccountModule'
+  scope: rg
+  params: {
+    containerNames: containerNames
+    storageAccountName: storageAccountFullName
+    kind: storageAccountKind
+    sku: storageAccountSku
+    location: location
+  }  
 }
