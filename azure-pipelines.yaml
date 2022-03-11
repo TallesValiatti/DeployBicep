@@ -8,5 +8,12 @@ pool:
 jobs:
 - job:
   steps:
-  - script: echo Hello world!
-    displayName: 'My pipeline'
+  - task: AzureCLI@2
+    inputs:
+      azureSubscription: 'my-service-connection'
+      scriptType: 'bash'
+      scriptLocation: 'inlineScript'
+      inlineScript: |
+        az deployment sub create \
+          --location centralus
+          --template-file deploy/main.bicep
