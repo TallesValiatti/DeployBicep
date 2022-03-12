@@ -1,9 +1,6 @@
 // Scope
 targetScope = 'subscription'
 
-// Not Used Param
-param notUsedParam string
-
 // Shared Params
 param location string = deployment().location
 param resourceGroupName string
