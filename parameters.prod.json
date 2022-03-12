@@ -9,7 +9,7 @@
         "value": "prod"
       },
       "storageAccountName": {
-        "value": "sadeploybicep-2"
+        "value": "sadeploybicep"
       },
       "storageAccountSku": {
         "value": "Standard_LRS"
